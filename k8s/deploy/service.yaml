@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: session-service
+  namespace: food2gether
+spec:
+  selector:
+    app: session-service
+  type: ClusterIP
+  ports:
+  - name: session-service
+    protocol: TCP
+    port: 80
+    targetPort: 8080
