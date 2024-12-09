@@ -1,0 +1,32 @@
+name: Verify push to protected branch
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-native:
+    uses: food2gether/workflows/.github/workflows/backend-test.yaml@main
+    with:
+      java_version: '17'
+      profile: native
+  test-jvm:
+    uses: food2gether/workflows/.github/workflows/backend-test.yaml@main
+    with:
+      java_version: '17'
+      test_results_artifact_key: test-results
+  sonar:
+    needs: test-native
+    uses: food2gether/workflows/.github/workflows/backend-scan.yaml@main
+    with:
+      java_version: '17'
+      test_results_artifact_key: test-results
+      sonar_project_key: food2gether_session-service
+      # Branch analysis parameters should not be needed for intregated CIs (like GitHub Actions)
+    secrets:
+      sonar_token: ${{ secrets.SONAR_TOKEN }}

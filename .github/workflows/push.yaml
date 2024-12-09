@@ -1,0 +1,18 @@
+name: Verify commit
+
+on:
+  push:
+    ignore-branches:
+      - main
+    branches:
+      - '*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-jvm:
+    uses: food2gether/workflows/.github/workflows/backend-test.yaml@main
+    with:
+      java_version: '17'
