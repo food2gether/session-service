@@ -4,14 +4,11 @@ package com.github.food2gether.profileservice.api;
 import java.util.Date;
 
 public class Session {
+
     private Integer id;
     private Integer restaurantId;
     private Integer organizerId;
     private Date deadline;
-
-    // Constructors
-    public Session() {
-    }
 
     public Session(Integer id, Integer restaurantId, Integer organizerId, Date deadline) {
         this.id = id;
@@ -26,7 +23,6 @@ public class Session {
 //        this.deadline = deadline;
 //    }
 
-    // Getters and Setters
     public Integer getId() {
         return id;
     }
@@ -59,4 +55,3 @@ public class Session {
         this.deadline = deadline;
     }
 }
-

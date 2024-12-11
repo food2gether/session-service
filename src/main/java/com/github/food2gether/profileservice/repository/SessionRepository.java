@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class SessionRepository {
+
     private final Map<Integer, Session> sessionStore = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
 
@@ -52,4 +53,3 @@ public class SessionRepository {
         return sessionStore.remove(id) != null;
     }
 }
-

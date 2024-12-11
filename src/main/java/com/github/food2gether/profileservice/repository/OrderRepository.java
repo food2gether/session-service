@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class OrderRepository {
+
     private final Map<Integer, Order> orderStore = new HashMap<>();
     private final AtomicInteger idGenerator = new AtomicInteger(1);
 

@@ -3,11 +3,10 @@ package com.github.food2gether.profileservice.api;
 import java.util.List;
 
 public class Order {
+
     private Integer id;
     private Integer profileId;
     private List<String> entries;
-
-    public Order(){}
 
     public Order(Integer id, Integer profileId, List<String> entries) {
         this.id = id;
