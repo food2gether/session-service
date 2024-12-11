@@ -1,9 +1,13 @@
 package com.github.food2gether.profileservice.api;
 
 import java.util.List;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
+@Entity
 public class Order {
 
+    @Id
     private Integer id;
     private Integer profileId;
     private List<String> entries;

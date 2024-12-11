@@ -3,8 +3,13 @@ package com.github.food2gether.profileservice.api;
 
 import java.util.Date;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class Session {
 
+    @Id
     private Integer id;
     private Integer restaurantId;
     private Integer organizerId;
