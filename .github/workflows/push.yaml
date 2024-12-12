@@ -2,7 +2,7 @@ name: Verify commit
 
 on:
   push:
-    ignore-branches:
+    branches-ignore:
       - main
     branches:
       - '*'

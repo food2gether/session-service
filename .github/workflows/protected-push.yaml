@@ -21,7 +21,7 @@ jobs:
       java_version: '17'
       test_results_artifact_key: test-results
   sonar:
-    needs: test-native
+    needs: test-jvm
     uses: food2gether/workflows/.github/workflows/backend-scan.yaml@main
     with:
       java_version: '17'
