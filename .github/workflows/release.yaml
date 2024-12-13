@@ -4,18 +4,13 @@ on:
   release:
     types: [published]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: false
-
 permissions:
   packages: write
 
 jobs:
   publish:
-    uses: food2gether/workflows/.github/workflows/backend-publish.yaml@main
+    uses: food2gether/workflows/.github/workflows/backend-release.yaml@main
     with:
       java_version: '17'
       version: ${{ github.event.release.tag_name }}
-    secrets:
-      gh_token: ${{ secrets.GITHUB_TOKEN }}
+      gh-token: ${{ secrets.GITHUB_TOKEN }}
