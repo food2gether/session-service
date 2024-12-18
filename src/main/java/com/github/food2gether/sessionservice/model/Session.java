@@ -1,5 +1,6 @@
 package com.github.food2gether.sessionservice.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +14,7 @@ public class Session {
   private Integer id;
 
   @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+  @JsonIgnore
   private List<Order> orders;
 
   @Column(name = "restaurant_id", nullable = false)
