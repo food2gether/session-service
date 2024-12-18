@@ -42,6 +42,14 @@ public class Session {
     this.id = id;
   }
 
+  public List<Order> getOrders() {
+    return orders;
+  }
+
+  public void setOrders(List<Order> orders) {
+    this.orders = orders;
+  }
+
   public Integer getRestaurantId() {
     return restaurantId;
   }
