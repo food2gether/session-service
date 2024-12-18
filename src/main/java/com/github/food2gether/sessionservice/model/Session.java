@@ -1,4 +1,4 @@
-package com.github.food2gether.profileservice.model;
+package com.github.food2gether.sessionservice.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
