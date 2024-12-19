@@ -43,18 +43,9 @@ public class SessionRepository {
 
 
   @Transactional
-  public boolean deleteSessionById(Integer id) {
-    Optional<Session> sessionOptional = jpaStreamer.stream(Session.class)
-        .filter(Session$.id.equal(id))
-        .findFirst();
-
-    if (sessionOptional.isPresent()) {
-      Session session = sessionOptional.get();
+  public boolean deleteSessionById(Session session) {
       entityManager.remove(entityManager.contains(session) ? session : entityManager.merge(session));
       return true;
-    } else {
-      return false;
-    }
   }
 
   @Transactional
@@ -67,5 +58,4 @@ public class SessionRepository {
     entityManager.persist(session);
     return session;
   }
-
 }

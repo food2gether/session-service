@@ -86,13 +86,12 @@ public class SessionResource {
       return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
     }
 
-    Session updatedSession = existingSession.get();
-    Optional.ofNullable(restaurantId).ifPresent(updatedSession::setRestaurantId);
-    Optional.ofNullable(organizerId).ifPresent(updatedSession::setOrganizerId);
-    Optional.ofNullable(deadline).ifPresent(updatedSession::setDeadline);
+    Optional.ofNullable(restaurantId).ifPresent(existingSession.get()::setRestaurantId);
+    Optional.ofNullable(organizerId).ifPresent(existingSession.get()::setOrganizerId);
+    Optional.ofNullable(deadline).ifPresent(existingSession.get()::setDeadline);
 
-    updatedSession = sessionRepository.updateSession(updatedSession);
-    return Response.ok(Map.of("success", true, "data", Map.of("id", updatedSession.getId())))
+    return Response.ok(Map.of("success", true, "data", Map.of("id",
+        sessionRepository.updateSession(existingSession.get()).getId())))
         .build();
   }
 
@@ -101,12 +100,12 @@ public class SessionResource {
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteSessionById(@PathParam("id") Integer id) {
-    boolean deleted = sessionRepository.deleteSessionById(id);
-    if (!deleted) {
+    Optional<Session> session = sessionRepository.getSessionById(id);
+    if (session.isEmpty()){
       return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
     }
-
-    return Response.ok(Map.of("success", true)).build();
+    boolean deleted = sessionRepository.deleteSessionById(session.get());
+    return Response.ok(Map.of("success", deleted, "data", Map.of("id", id))).build();
   }
 
   private Response buildErrorResponse(Response.Status status, String messageKey) {
