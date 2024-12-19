@@ -1,6 +1,5 @@
 package com.github.food2gether.sessionservice.repository;
 
-import com.github.food2gether.sessionservice.model.Entry;
 import com.github.food2gether.sessionservice.model.Order;
 import com.github.food2gether.sessionservice.model.Order$;
 import com.github.food2gether.sessionservice.model.Session;
@@ -33,7 +32,7 @@ public class OrderRepository {
 
   @Transactional
   public Order createOrder(Order order) {
-    entityManager.persist(order);
+    entityManager.persist(entityManager.contains(order) ? order : entityManager.merge(order));
     return order;
   }
 

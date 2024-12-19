@@ -48,49 +48,49 @@ public class OrderResource {
         Map.of("code", status.getStatusCode(), "message_key", messageKey))).build();
   }
 
-//  @PUT
-//  @Consumes(MediaType.APPLICATION_JSON)
-//  @Produces(MediaType.APPLICATION_JSON)
-//  public Response createOrUpdateOrder(@PathParam("sessionId") Integer sessionId,
-//      @QueryParam("id") Integer id,
-//      @QueryParam("profileId") Integer profileId,
-//      List<Entry> entries)
-//  {
-//    if (id == null) {
-//      return handleOrderCreation(sessionId, profileId, entries);
-//    } else {
-//      return handleOrderUpdate(sessionId, id, profileId, entries);
-//    }
-//
-//  }
-//
-//  private Response handleOrderCreation(Integer sessionId, Integer profileId, List<Entry> entries) {
-//    if (profileId == null || entries == null || entries.isEmpty()) {
-//      return buildErrorResponse(Response.Status.BAD_REQUEST, "request.invalid");
-//    }
-//
-//    Optional<Session> session = sessionRepository.getSessionById(sessionId);
-//    if (session.isEmpty()) {
-//      return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
-//    }
-//
-//    Order createdOrder = orderRepository.createOrder(new Order(profileId, session.get(), entries));
-//    return Response.status(Response.Status.CREATED)
-//        .entity(Map.of("success", true, "data", Map.of("id", createdOrder.getId()))).build();
-//  }
-//
-//  private Response handleOrderUpdate(Integer sessionId, Integer id, Integer profileId, List<Entry> entries) {
-//    Optional<Order> order = orderRepository.getOrderByIdAndSessionId(id, sessionId);
-//    if (order.isEmpty()) {
-//      return buildErrorResponse(Response.Status.NOT_FOUND, "order.not_found");
-//    }
-//
-//    Optional.ofNullable(profileId).ifPresent(order.get()::setProfileId);
-//    Optional.ofNullable(entries).ifPresent(order.get()::setEntries);
-//
-//    return Response.ok(
-//        Map.of("success", true, "data", orderRepository.updateOrder(order.get()).getId())).build();
-//  }
+  @PUT
+  @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response createOrUpdateOrder(@PathParam("sessionId") Integer sessionId,
+      @QueryParam("id") Integer id,
+      @QueryParam("profileId") Integer profileId,
+      List<Entry> entries)
+  {
+    if (id == null) {
+      return handleOrderCreation(sessionId, profileId, entries);
+    } else {
+      return handleOrderUpdate(sessionId, id, profileId, entries);
+    }
+
+  }
+
+  private Response handleOrderCreation(Integer sessionId, Integer profileId, List<Entry> entries) {
+    if (profileId == null || entries == null || entries.isEmpty()) {
+      return buildErrorResponse(Response.Status.BAD_REQUEST, "request.invalid");
+    }
+
+    Optional<Session> session = sessionRepository.getSessionById(sessionId);
+    if (session.isEmpty()) {
+      return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
+    }
+
+    Order createdOrder = orderRepository.createOrder(new Order(profileId, session.get(), entries));
+    return Response.status(Response.Status.CREATED)
+        .entity(Map.of("success", true, "data", Map.of("id", createdOrder.getId()))).build();
+  }
+
+  private Response handleOrderUpdate(Integer sessionId, Integer id, Integer profileId, List<Entry> entries) {
+    Optional<Order> order = orderRepository.getOrderByIdAndSessionId(id, sessionId);
+    if (order.isEmpty()) {
+      return buildErrorResponse(Response.Status.NOT_FOUND, "order.not_found");
+    }
+
+    Optional.ofNullable(profileId).ifPresent(order.get()::setProfileId);
+    Optional.ofNullable(entries).ifPresent(order.get()::setEntries);
+
+    return Response.ok(
+        Map.of("success", true, "data", orderRepository.updateOrder(order.get()).getId())).build();
+  }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
