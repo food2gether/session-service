@@ -14,11 +14,12 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Path("/api/v1/sessions")
-public class SessionRessource {
+public class SessionResource {
 
   @Inject
   SessionRepository sessionRepository;
@@ -37,6 +38,22 @@ public class SessionRessource {
 
     return Response.ok(Map.of("success", true, "data", session.get())).build();
   }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getAllSessions(@QueryParam("restaurant_id") Integer restaurantId,
+      @QueryParam("orderable") Boolean orderable) {
+    Optional<List<Session>> optionalSessions = sessionRepository.getSessions(restaurantId, orderable);
+
+    if (optionalSessions.isEmpty()) {
+      return Response.status(Response.Status.NOT_FOUND)
+          .entity(Map.of("success", false, "error", Map.of("code", 404, "message_key", "sessions.not_found")))
+          .build();
+    }
+
+    return Response.ok(Map.of("success", true, "data", optionalSessions.get())).build();
+  }
+
 
 
   @PUT
@@ -70,20 +87,11 @@ public class SessionRessource {
             .build();
       }
 
-
       Session updatedSession = existingSession.get();
-      if (restaurantId != null) {
-        updatedSession.setRestaurantId(restaurantId);
-      }
-      if (organizerId != null) {
-        updatedSession.setOrganizerId(organizerId);
-      }
-      if (deadline != null) {
-        updatedSession.setDeadline(deadline);
-      }
+      Optional.ofNullable(restaurantId).ifPresent(updatedSession::setRestaurantId);
+      Optional.ofNullable(organizerId).ifPresent(updatedSession::setOrganizerId);
+      Optional.ofNullable(deadline).ifPresent(updatedSession::setDeadline);
       sessionRepository.updateSession(updatedSession);
-//      Session updatedSession = sessionRepository.updateSession(
-//          new Session(id, restaurantId, organizerId, deadline));
       return Response.ok(Map.of("success", true, "data", Map.of("id", updatedSession.getId())))
           .build();
     }
