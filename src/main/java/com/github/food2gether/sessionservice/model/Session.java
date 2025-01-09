@@ -13,7 +13,7 @@ public class Session {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Integer id;
 
-  @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
   @JsonIgnore
   private List<Order> orders;
 

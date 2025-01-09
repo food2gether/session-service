@@ -1,13 +1,11 @@
 package com.github.food2gether.sessionservice.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "entries")
-@JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonIgnoreProperties(ignoreUnknown = true)
+//@JsonInclude(JsonInclude.Include.NON_NULL) dont remember what for but doesnt seem to be needed anymore :)
+//@JsonIgnoreProperties(ignoreUnknown = true)
 public class Entry {
 
   @Id

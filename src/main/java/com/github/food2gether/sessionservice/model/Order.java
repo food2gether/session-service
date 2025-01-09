@@ -18,7 +18,7 @@ public class Order {
   @JoinColumn(name = "session_id", nullable = false)
   private Session session;
 
-  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
   @JoinColumn(name = "order_id")
   private List<Entry> entries;
 

@@ -3,7 +3,6 @@ package com.github.food2gether.sessionservice.repository;
 import com.github.food2gether.sessionservice.model.Order;
 import com.github.food2gether.sessionservice.model.Order$;
 import com.github.food2gether.sessionservice.model.Session;
-import com.github.food2gether.sessionservice.model.Session$;
 import com.speedment.jpastreamer.application.JPAStreamer;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -23,12 +22,24 @@ public class OrderRepository {
   EntityManager entityManager;
 
   public Optional<Order> getOrderByIdAndSessionId(Integer id, Integer sessionId) {
-    return jpaStreamer.stream(Session.class)
-        .filter(Session$.id.equal(sessionId))
-        .flatMap(session -> session.getOrders().stream())
-        .filter(order -> order.getId().equals(id))
-        .findFirst();
+    var stream = jpaStreamer.stream(Order.class);
+    stream = stream.filter(Order$.id.equal(id));
+    stream = stream.filter(order -> order.getSession().getId().equals(sessionId));
+    return stream.findFirst();
   }
+
+  public Optional<List<Order>> getOrdersBySessionIdAndProfileId(Session session, Integer profileId) {
+    List<Order> orders = session.getOrders();   //Ineffizienter als Database query aber einfacher
+
+    if (profileId != null) {
+      orders = orders.stream()
+          .filter(order -> order.getProfileId().equals(profileId))
+          .toList();
+    }
+
+    return orders.isEmpty() ? Optional.empty() : Optional.of(orders);
+  }
+
 
   @Transactional
   public Order createOrder(Order order) {
@@ -38,26 +49,17 @@ public class OrderRepository {
 
   @Transactional
   public Order updateOrder(Order order) {
-    return entityManager.merge(order);
-  }
-
-  public Optional<List<Order>> getOrdersBySessionIdAndProfileId(Integer sessionId, Integer profileId) {
-    var stream = jpaStreamer.stream(Session.class)
-        .filter(Session$.id.equal(sessionId))
-        .flatMap(session -> session.getOrders().stream());
-
-    if (profileId != null) {
-      stream = stream.filter(Order$.profileId.equal(profileId));
-    }
-
-    List<Order> orders = stream.toList();
-    return orders.isEmpty() ? Optional.empty() : Optional.of(orders);
+    return entityManager.merge(order);    //works as long as order exists, else 500
   }
 
   @Transactional
   public boolean deleteOrderById(Order order) {
-    entityManager.remove(entityManager.contains(order) ? order : entityManager.merge(order));
-    return true;
+    Order managedOrder = entityManager.find(Order.class, order.getId());
+    if (managedOrder != null) {
+      entityManager.remove(managedOrder);
+      return true;
+    }
+    return false;
   }
 }
 

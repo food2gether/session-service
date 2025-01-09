@@ -34,6 +34,10 @@ public class OrderResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getOrderById(@PathParam("sessionId") Integer sessionId,
       @PathParam("id") Integer id) {
+    Optional<Session> session = sessionRepository.getSessionById(sessionId);
+    if (session.isEmpty()) {
+      return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
+    }
     Optional<Order> order = orderRepository.getOrderByIdAndSessionId(id, sessionId);
 
     if (order.isEmpty()) {
@@ -96,8 +100,13 @@ public class OrderResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response getOrders(@PathParam("sessionId") Integer sessionId,
       @QueryParam("profileId") Integer profileId) {
+    Optional<Session> session = sessionRepository.getSessionById(sessionId);
+    if (session.isEmpty()) {
+      return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
+    }
+
     Optional<List<Order>> optionalOrders = orderRepository.getOrdersBySessionIdAndProfileId(
-        sessionId, profileId);
+        session.get(), profileId);
     if (optionalOrders.isEmpty()) {
       return buildErrorResponse(Response.Status.NOT_FOUND, "orders.not_found");
     }
@@ -109,6 +118,10 @@ public class OrderResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteOrderById(@PathParam("sessionId") Integer sessionId,
       @PathParam("id") Integer id) {
+    Optional<Session> session = sessionRepository.getSessionById(sessionId);
+    if (session.isEmpty()) {
+      return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
+    }
     Optional<Order> order = orderRepository.getOrderByIdAndSessionId(id, sessionId);
     if (order.isEmpty()) {
       return buildErrorResponse(Response.Status.NOT_FOUND, "order.not_found");

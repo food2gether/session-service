@@ -27,14 +27,23 @@ public class SessionRepository {
         .findFirst();
   }
 
-  public Optional<List<Session>> getSessions(Integer restaurantId, Boolean orderable) {
+  public Optional<List<Session>> getSessions(Integer restaurantId, Boolean orderable, Integer organizerId) {
     var stream = jpaStreamer.stream(Session.class);
 
     if (restaurantId != null) {
       stream = stream.filter(Session$.restaurantId.equal(restaurantId));
     }
-    if (orderable != null && orderable) {
-      stream = stream.filter(Session$.deadline.greaterThan(LocalDateTime.now()));
+
+    if (orderable != null) {
+      if (orderable) {
+        stream = stream.filter(Session$.deadline.greaterThan(LocalDateTime.now()));
+      }else {
+        stream = stream.filter(Session$.deadline.lessThan(LocalDateTime.now()));
+      }
+    }
+
+    if (organizerId != null) {
+      stream = stream.filter(Session$.organizerId.equal(organizerId));
     }
 
     List<Session> sessions = stream.toList();

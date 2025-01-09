@@ -39,9 +39,9 @@ public class SessionResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllSessions(@QueryParam("restaurant_id") Integer restaurantId,
-      @QueryParam("orderable") Boolean orderable) {
+      @QueryParam("orderable") Boolean orderable, @QueryParam("organizer_id") Integer organizerId) {
     Optional<List<Session>> optionalSessions = sessionRepository.getSessions(restaurantId,
-        orderable);
+        orderable, organizerId);
 
     if (optionalSessions.isEmpty()) {
       return buildErrorResponse(Response.Status.NOT_FOUND, "session.not_found");
