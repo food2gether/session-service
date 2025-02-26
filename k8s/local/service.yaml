@@ -7,4 +7,8 @@ metadata:
 spec:
   type: ExternalName
   externalName: host.minikube.internal
-
+  ports:
+  - name: frontend
+    protocol: TCP
+    port: 80
+    targetPort: 8080
