@@ -7,7 +7,7 @@ on:
 jobs:
   pull-request:
     uses: food2gether/workflows/.github/workflows/backend-pull-request.yaml@main
-    inputs:
+    with:
       sonar-project: ${{ vars.SONAR_PROJECT }}
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}

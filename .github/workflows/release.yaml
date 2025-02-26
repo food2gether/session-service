@@ -13,4 +13,3 @@ jobs:
     with:
       java_version: '17'
       version: ${{ github.event.release.tag_name }}
-      gh-token: ${{ secrets.GITHUB_TOKEN }}

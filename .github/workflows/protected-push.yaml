@@ -8,7 +8,7 @@ on:
 jobs:
   protected-push:
     uses: food2gether/workflows/.github/workflows/backend-protected-push.yaml@main
-    inputs:
+    with:
       sonar-project: ${{ vars.SONAR_PROJECT }}
     secrets:
       sonar-token: ${{ secrets.SONAR_TOKEN }}
