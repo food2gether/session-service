@@ -1,4 +1,4 @@
-package com.github.food2gether.sessionservice.controller.v1;
+package com.github.food2gether.sessionservice.resource.v1;
 
 import com.github.food2gether.model.Order;
 import com.github.food2gether.model.Order.State;
@@ -22,7 +22,7 @@ public class SessionOrderResourceController {
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response createOrUpdateOrder(Order body) {
+  public Response createOrUpdateOrder(Order.DTO body) {
     if (body != null && body.getId() == null)
       body.setId(ThreadLocalRandom.current().nextLong());
 

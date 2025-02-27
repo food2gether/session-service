@@ -1,7 +1,9 @@
-package com.github.food2gether.sessionservice.controller.v1;
+package com.github.food2gether.sessionservice.resource.v1;
 
 import com.github.food2gether.model.Session;
 import com.github.food2gether.response.APIResponse;
+import com.github.food2gether.sessionservice.service.SessionService;
+import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -21,12 +23,15 @@ import java.util.concurrent.ThreadLocalRandom;
 @Path("/api/v1/sessions")
 public class SessionResourceController {
 
+  @Inject
+  SessionService service;
+
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response createOrUpdateSession(Session body) {
+  public Response createOrUpdateSession(Session.DTO body) {
     if (body != null && body.getId() == null)
-      body.setId(ThreadLocalRandom.current().nextLong());
+      body.setId(ThreadLocalRandom.current().nextLong(100000));
 
     return APIResponse.response(Response.Status.CREATED, body);
   }
@@ -39,7 +44,7 @@ public class SessionResourceController {
   ) {
     return APIResponse.response(Response.Status.OK, List.of(new Session.DTO(
         1L,
-        restaurantId,
+        restaurantId == null ? 1L : restaurantId,
         1L,
         LocalDateTime.now()
     )));
