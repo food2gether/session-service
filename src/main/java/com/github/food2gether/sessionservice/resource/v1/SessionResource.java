@@ -3,6 +3,7 @@ package com.github.food2gether.sessionservice.resource.v1;
 import com.github.food2gether.model.Session;
 import com.github.food2gether.response.APIResponse;
 import com.github.food2gether.sessionservice.service.SessionService;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -14,10 +15,12 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
 
+@ApplicationScoped
 @Path("/api/v1/sessions")
 public class SessionResource {
 
@@ -29,16 +32,16 @@ public class SessionResource {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response createOrUpdateSession(Session.DTO body) {
     if (body == null) {
-      return APIResponse.response(Response.Status.BAD_REQUEST, new Throwable("Request body is required"));
+      throw new WebApplicationException("Missing request body", Response.Status.BAD_REQUEST);
     }
+    Session session = this.service.createOrUpdate(body);
 
-    try {
-      Session session = this.service.createOrUpdateSession(body);
-
-      return APIResponse.response(body.getId() == null ? Response.Status.CREATED : Response.Status.OK, session);
-    } catch (Exception e) {
-      return APIResponse.response(Response.Status.BAD_REQUEST, e);
-    }
+    return APIResponse.response(
+        body.getId() == null
+            ? Response.Status.CREATED
+            : Response.Status.OK,
+        session
+    );
   }
 
   @GET
@@ -47,24 +50,24 @@ public class SessionResource {
       @QueryParam("restaurant_id") Long restaurantId,
       @QueryParam("orderable") @DefaultValue("false") boolean filterOrderable
   ) {
-    try {
-      List<Session> sessions = this.service.getAllSessions(restaurantId, filterOrderable);
+    List<Session> sessions = this.service.getAll(restaurantId, filterOrderable);
 
-      return APIResponse.response(Response.Status.OK, sessions.stream().map(Session.DTO::fromSession).toList());
-    } catch (Exception e) {
-      return APIResponse.response(Response.Status.BAD_REQUEST, e);
-    }
+    return APIResponse.response(
+        Response.Status.OK,
+        sessions.stream()
+            .map(Session.DTO::fromSession)
+            .toList()
+    );
   }
 
   @GET
   @Path("/{id}")
   @Produces(MediaType.APPLICATION_JSON)
   public Response getSessionById(@PathParam("id") Long id) {
-    try {
-      return APIResponse.response(Response.Status.OK, Session.DTO.fromSession(this.service.getSessionById(id)));
-    } catch (Exception e) {
-      return APIResponse.response(Response.Status.BAD_REQUEST, e);
-    }
+    return APIResponse.response(
+        Response.Status.OK,
+        Session.DTO.fromSession(this.service.getById(id))
+    );
   }
 
   @DELETE
@@ -75,12 +78,8 @@ public class SessionResource {
       @HeaderParam("X-User-Email") String userEmail,
       @PathParam("id") Long id
   ) {
-    try {
-      Session session = this.service.deleteSession(userEmail, id);
-      return APIResponse.response(Response.Status.OK, Session.DTO.fromSession(session));
-    } catch (Exception e) {
-      return APIResponse.response(Response.Status.BAD_REQUEST, e);
-    }
+    Session session = this.service.delete(userEmail, id);
+    return APIResponse.response(Response.Status.OK, Session.DTO.fromSession(session));
   }
 
 }

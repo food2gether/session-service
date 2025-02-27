@@ -3,98 +3,106 @@ package com.github.food2gether.sessionservice.service;
 import com.github.food2gether.model.Profile;
 import com.github.food2gether.model.Restaurant;
 import com.github.food2gether.model.Session;
-import com.github.food2gether.sessionservice.repository.ProfileRepository;
-import com.github.food2gether.sessionservice.repository.RestaurantRepository;
 import com.github.food2gether.sessionservice.repository.SessionRepository;
-import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Response.Status;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 public class SessionService {
 
   @Inject
+  EntityManager entityManager;
+
+  @Inject
   SessionRepository sessionRepository;
 
-  @Inject
-  ProfileRepository profileRepository;
-
-  @Inject
-  RestaurantRepository restaurantRepository;
-
-  public Session createOrUpdateSession(Session.DTO sessionDto) {
-    return sessionDto.getId() == null ? this.createSession(sessionDto) : this.updateSession(sessionDto);
+  public Session createOrUpdate(Session.DTO sessionDto) {
+    return sessionDto.getId() == null ? this.create(sessionDto) : this.update(sessionDto);
   }
 
-  public Session createSession(Session.DTO sessionDto) {
+  public Session create(Session.DTO sessionDto) {
     if (sessionDto.getId() != null) {
-      throw new IllegalArgumentException("Session id must be null for creating a new session");
+      throw new WebApplicationException(
+          "Session id must be null for creating a new session",
+          Status.BAD_REQUEST
+      );
     }
 
     // Check if all required fields are present for creating a new session
     if (sessionDto.getRestaurantId() == null
         || sessionDto.getOrganizerId() == null
         || sessionDto.getDeadline() == null) {
-      throw new IllegalArgumentException("Missing required fields for creating a new session");
+      throw new WebApplicationException("Missing required fields for creating a new session", Status.BAD_REQUEST);
     }
 
-    Restaurant restaurant = this.restaurantRepository.findByIdOptional(sessionDto.getRestaurantId())
-        .orElseThrow(() -> new IllegalArgumentException("Restaurant with id " + sessionDto.getRestaurantId() + " does not exist"));
-    Profile organizer = this.profileRepository.findByIdOptional(sessionDto.getOrganizerId())
-        .orElseThrow(() -> new IllegalArgumentException("Profile with id " + sessionDto.getOrganizerId() + " does not exist"));
+    if (sessionDto.getDeadline().isBefore(LocalDateTime.now())) {
+      throw new WebApplicationException("Session deadline must be in the future", Status.BAD_REQUEST);
+    }
 
-    Session session = new Session(null, List.of(), restaurant, organizer, sessionDto.getDeadline());
+    Session session = new Session();
+    session.setOrders(List.of());
+    session.setRestaurant(this.entityManager.getReference(Restaurant.class, sessionDto.getRestaurantId()));
+    session.setOrganizer(this.entityManager.getReference(Profile.class, sessionDto.getOrganizerId()));
+    session.setDeadline(sessionDto.getDeadline());
+
     this.sessionRepository.persist(session);
     return session;
   }
 
-  public Session updateSession(Session.DTO session) {
+  @Transactional
+  public Session update(Session.DTO session) {
     if (session.getId() == null) {
-      throw new IllegalArgumentException("Session id must not be null for updating a session");
+      throw new WebApplicationException("Session id must not be null for updating a session", Status.BAD_REQUEST);
     }
 
     Session existingSession = this.sessionRepository.findByIdOptional(session.getId()).
-        orElseThrow(() -> new IllegalArgumentException("Session with id " + session.getId() + " does not exist"));
+        orElseThrow(() -> new WebApplicationException("Session with id " + session.getId() + " does not exist", Status.NOT_FOUND));
 
-    if (session.getDeadline() != null) existingSession.setDeadline(session.getDeadline());
+    LocalDateTime deadline = session.getDeadline();
+    if (deadline != null) {
+      if (deadline.isBefore(LocalDateTime.now())) {
+        throw new WebApplicationException("Session deadline must be in the future", Status.BAD_REQUEST);
+      }
+      existingSession.setDeadline(session.getDeadline());
+    }
 
     if (session.getRestaurantId() != null) {
-      Restaurant restaurant = this.restaurantRepository.findByIdOptional(session.getRestaurantId())
-          .orElseThrow(() -> new IllegalArgumentException("Restaurant with id " + session.getRestaurantId() + " does not exist"));
-      existingSession.setRestaurant(restaurant);
+      existingSession.setRestaurant(this.entityManager.getReference(Restaurant.class, session.getRestaurantId()));
     }
 
     if (session.getOrganizerId() != null) {
-      Profile organizer = this.profileRepository.findByIdOptional(session.getOrganizerId())
-          .orElseThrow(() -> new IllegalArgumentException("Profile with id " + session.getOrganizerId() + " does not exist"));
-      existingSession.setOrganizer(organizer);
+      existingSession.setOrganizer(this.entityManager.getReference(Profile.class, session.getOrganizerId()));
     }
 
     this.sessionRepository.persist(existingSession);
     return existingSession;
   }
 
-  public List<Session> getAllSessions(Long restaurantId, boolean filterOrderable) {
+  public List<Session> getAll(Long restaurantId, boolean filterOrderable) {
     LocalDateTime dueDate = filterOrderable ? LocalDateTime.now() : LocalDateTime.MAX;
     return restaurantId == null
         ? this.sessionRepository.findByDueDate(dueDate)
         : this.sessionRepository.findByRestaurantAndDueDate(restaurantId, dueDate);
   }
 
-  public Session getSessionById(Long id) {
+  public Session getById(Long id) {
     return this.sessionRepository.findByIdOptional(id)
-        .orElseThrow(() -> new IllegalArgumentException("Session with id " + id + " does not exist"));
+        .orElseThrow(() -> new WebApplicationException("Session with id " + id + " does not exist", Status.NOT_FOUND));
   }
 
-  public Session deleteSession(String userEmail, Long id) {
+  @Transactional
+  public Session delete(String userEmail, Long id) {
     Session session = this.sessionRepository.findByIdOptional(id)
-        .orElseThrow(() -> new IllegalArgumentException("Session with id " + id + " does not exist"));
+        .orElseThrow(() -> new WebApplicationException("Session with id " + id + " does not exist", Status.NOT_FOUND));
 
     if (!session.getOrganizer().getPrimaryEmail().equals(userEmail)) {
-      throw new IllegalArgumentException("Only the organizer of a session can delete it");
+      throw new WebApplicationException("Only the organizer of a session can delete it", Status.FORBIDDEN);
     }
 
     this.sessionRepository.delete(session);
