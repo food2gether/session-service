@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Path("/api/v1/sessions/{session_id}/orders")
-public class SessionOrderResourceController {
+public class SessionOrderResource {
 
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
