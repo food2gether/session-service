@@ -19,24 +19,52 @@ spec:
   template:
     metadata:
       annotations:
-        kubectl.kubernetes.io/default-container:  session-service
+        kubectl.kubernetes.io/default-container: session-service
       labels:
         app: session-service
     spec:
       containers:
-      - name: session-service
-        image: docker.io/kicbase/echo-server:1.0 # ghcr.io/food2gether/session-service:0.0.1
-        imagePullPolicy: IfNotPresent
-        resources:
-          requests:
-            cpu: 100m
-            memory: 100Mi
-          limits:
-            cpu: 100m
-            memory: 100Mi
-        env: []
-        ports:
-        - containerPort: 8080
-          name: session-service
+        - name: session-service
+          image: ghcr.io/food2gether/session-service:1.0.0
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          env:
+            - name: QUARKUS_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: database
+                  key: username
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database
+                  key: password
+            # This is a workaround to combine various values from secrets into a single value
+            - name: DATABASE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: database
+                  key: host
+            - name: DATABASE_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: database
+                  key: port
+            - name: DATABASE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: database
+                  key: database
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              value: jdbc:postgresql://$(DATABASE_HOST):$(DATABASE_PORT)/$(DATABASE_NAME)
+          ports:
+            - containerPort: 8080
+              name: session-service
       restartPolicy: Always
 
