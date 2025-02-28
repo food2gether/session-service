@@ -1,13 +1,14 @@
 package com.github.food2gether.sessionservice.service;
 
-import com.github.food2gether.model.Profile;
-import com.github.food2gether.model.Restaurant;
-import com.github.food2gether.model.Session;
+import com.github.food2gether.shared.model.Profile;
+import com.github.food2gether.shared.model.Restaurant;
+import com.github.food2gether.shared.model.Session;
 import com.github.food2gether.sessionservice.repository.SessionRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import java.time.LocalDateTime;
@@ -65,7 +66,7 @@ public class SessionServiceImpl implements SessionService {
     }
 
     Session existingSession = this.sessionRepository.findByIdOptional(session.getId()).
-        orElseThrow(() -> new WebApplicationException("Session with id " + session.getId() + " does not exist", Status.NOT_FOUND));
+        orElseThrow(() -> new NotFoundException("Session with id " + session.getId() + " does not exist"));
 
     LocalDateTime deadline = session.getDeadline();
     if (deadline != null) {
@@ -105,7 +106,7 @@ public class SessionServiceImpl implements SessionService {
   @Override
   public Session delete(String userEmail, Long id) {
     Session session = this.sessionRepository.findByIdOptional(id)
-        .orElseThrow(() -> new WebApplicationException("Session with id " + id + " does not exist", Status.NOT_FOUND));
+        .orElseThrow(() -> new NotFoundException("Session with id " + id + " does not exist"));
 
     if (!session.getOrganizer().getPrimaryEmail().equals(userEmail)) {
       throw new WebApplicationException("Only the organizer of a session can delete it", Status.FORBIDDEN);

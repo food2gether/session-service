@@ -1,7 +1,7 @@
 package com.github.food2gether.sessionservice.resource.v1;
 
-import com.github.food2gether.model.Order;
-import com.github.food2gether.response.APIResponse;
+import com.github.food2gether.shared.model.Order;
+import com.github.food2gether.shared.response.APIResponse;
 import com.github.food2gether.sessionservice.service.OrderService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

@@ -1,6 +1,6 @@
 package com.github.food2gether.sessionservice.service;
 
-import com.github.food2gether.model.Session;
+import com.github.food2gether.shared.model.Session;
 import java.util.List;
 
 public interface SessionService {

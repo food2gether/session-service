@@ -1,17 +1,18 @@
 package com.github.food2gether.sessionservice.service;
 
 
-import com.github.food2gether.model.MenuItem;
-import com.github.food2gether.model.Order;
-import com.github.food2gether.model.OrderItem;
-import com.github.food2gether.model.Profile;
-import com.github.food2gether.model.Session;
+import com.github.food2gether.shared.model.MenuItem;
+import com.github.food2gether.shared.model.Order;
+import com.github.food2gether.shared.model.OrderItem;
+import com.github.food2gether.shared.model.Profile;
+import com.github.food2gether.shared.model.Session;
 import com.github.food2gether.sessionservice.repository.OrderRepository;
 import com.github.food2gether.sessionservice.repository.SessionRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import java.util.List;
@@ -37,7 +38,7 @@ public class OrderServiceImpl implements OrderService{
   @Override
   public Order create(Long sessionId, Order.DTO orderDto) {
     Session session = this.sessionRepository.findByIdOptional(sessionId)
-        .orElseThrow(() -> new WebApplicationException("Session with id " + sessionId + " does not exist", Status.NOT_FOUND));
+        .orElseThrow(() -> new NotFoundException("Session with id " + sessionId + " does not exist"));
 
     if (orderDto.getId() != null) {
       throw new WebApplicationException("Order id must be null for creating a new order", Status.BAD_REQUEST);
