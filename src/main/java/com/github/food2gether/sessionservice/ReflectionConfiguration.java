@@ -1,4 +1,4 @@
-package com.github.food2gether.sessionservice.controller.v1;
+package com.github.food2gether.sessionservice;
 
 import com.github.food2gether.shared.model.Order;
 import com.github.food2gether.shared.model.OrderItem;
@@ -11,12 +11,11 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
     targets = {
         DataAPIResponse.class,
         ErrorAPIResponse.class,
-            Session.DTO.class,
-            Order.DTO.class,
-            OrderItem.DTO.class
-
+        Session.DTO.class,
+        Order.DTO.class,
+        OrderItem.DTO.class
     }
 )
-public class ReflectionConfig {
+public class ReflectionConfiguration {
 
 }
