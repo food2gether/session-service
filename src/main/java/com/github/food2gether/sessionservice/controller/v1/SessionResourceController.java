@@ -1,7 +1,7 @@
 package com.github.food2gether.sessionservice.controller.v1;
 
-import com.github.food2gether.model.Session;
-import com.github.food2gether.response.APIResponse;
+import com.github.food2gether.shared.model.Session;
+import com.github.food2gether.shared.response.APIResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -24,7 +24,7 @@ public class SessionResourceController {
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response createOrUpdateSession(Session body) {
+  public Response createOrUpdateSession(Session.DTO body) {
     if (body != null && body.getId() == null)
       body.setId(ThreadLocalRandom.current().nextLong());
 
