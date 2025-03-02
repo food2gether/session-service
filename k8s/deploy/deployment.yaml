@@ -67,4 +67,3 @@ spec:
             - containerPort: 8080
               name: session-service
       restartPolicy: Always
-
