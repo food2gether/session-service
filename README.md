@@ -34,7 +34,7 @@ The API will be available at http://localhost:8080/api/v1/sessions
    ```
 2. Build and tag the Docker image:
    ```sh
-   docker build -f src/main/docker/Dockerfile.jvm -t quarkus/session-service:jvm .
+   docker build -f src/main/docker/Dockerfile.jvm -t ghcr.io/food2gether/session-service:jvm .
    ```
 3. Run the container:
    ```sh
