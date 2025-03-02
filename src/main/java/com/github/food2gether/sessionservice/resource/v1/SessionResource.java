@@ -1,5 +1,6 @@
 package com.github.food2gether.sessionservice.resource.v1;
 
+import com.github.food2gether.shared.Constant;
 import com.github.food2gether.shared.model.Session;
 import com.github.food2gether.shared.response.APIResponse;
 import com.github.food2gether.sessionservice.service.SessionService;
@@ -75,7 +76,7 @@ public class SessionResource {
   @Produces(MediaType.APPLICATION_JSON)
   public Response deleteSession(
       // This is provided by the auth proxy, therefore it is safe to use for user identification
-      @HeaderParam("X-User-Email") String userEmail,
+      @HeaderParam(Constant.USER_MAIL_HEADER) String userEmail,
       @PathParam("id") Long id
   ) {
     Session session = this.service.delete(userEmail, id);
