@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
       - name: session-service
-        image: ghcr.io/food2gether/session-service:0.0.2
+        image: ghcr.io/food2gether/session-service:0.0.3
         imagePullPolicy: IfNotPresent
         resources:
           requests:
