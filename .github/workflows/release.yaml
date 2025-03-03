@@ -13,3 +13,4 @@ jobs:
     with:
       java_version: '17'
       version: ${{ github.event.release.tag_name }}
+      latest: ${{ ! github.event.release.prerelease }}
