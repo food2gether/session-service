@@ -1,6 +1,7 @@
 package com.github.food2gether.sessionservice.service;
 
 
+import com.github.food2gether.sessionservice.repository.AnonymousRepository;
 import com.github.food2gether.shared.model.MenuItem;
 import com.github.food2gether.shared.model.Order;
 import com.github.food2gether.shared.model.OrderItem;
@@ -18,10 +19,7 @@ import jakarta.ws.rs.core.Response.Status;
 import java.util.List;
 
 @ApplicationScoped
-public class OrderServiceImpl implements OrderService{
-
-  @Inject
-  EntityManager entityManager;
+public class OrderServiceImpl implements OrderService {
 
   @Inject
   SessionRepository sessionRepository;
@@ -29,13 +27,15 @@ public class OrderServiceImpl implements OrderService{
   @Inject
   OrderRepository orderRepository;
 
+  @Inject
+  AnonymousRepository anonymousRepository;
+
   @Override
   public Order createOrUpdate(Long sessionId, Order.DTO orderDto) {
     return orderDto.getId() == null ? this.create(sessionId, orderDto) : this.update(orderDto);
   }
 
   @Transactional
-  @Override
   public Order create(Long sessionId, Order.DTO orderDto) {
     Session session = this.sessionRepository.findByIdOptional(sessionId)
         .orElseThrow(() -> new NotFoundException("Session with id " + sessionId + " does not exist"));
@@ -52,7 +52,11 @@ public class OrderServiceImpl implements OrderService{
     Order order = new Order();
     order.setItems(this.toOrderItems(orderDto.getItems()));
     order.setState(orderDto.getState() == null ? Order.State.OPEN : orderDto.getState());
-    order.setProfile(this.entityManager.getReference(Profile.class, orderDto.getProfileId()));
+
+    order.setProfile(this.anonymousRepository.findOptional(Profile.class, orderDto.getProfileId())
+        .orElseThrow(() -> new NotFoundException("Profile not found")));
+
+    order.setSession(session);
 
     session.getOrders().add(order);
 
@@ -63,7 +67,6 @@ public class OrderServiceImpl implements OrderService{
   }
 
   @Transactional
-  @Override
   public Order update(Order.DTO orderDto) {
     if (orderDto.getId() == null) {
       throw new WebApplicationException("Order id must not be null for updating a session", Status.BAD_REQUEST);
@@ -76,7 +79,8 @@ public class OrderServiceImpl implements OrderService{
         ));
 
     if (orderDto.getProfileId() != null)
-      existingOrder.setProfile(this.entityManager.getReference(Profile.class, orderDto.getProfileId()));
+      existingOrder.setProfile(this.anonymousRepository.findOptional(Profile.class, orderDto.getProfileId())
+          .orElseThrow(() -> new NotFoundException("Profile not found")));
 
     if (orderDto.getState() != null)
       existingOrder.setState(orderDto.getState());
@@ -88,28 +92,27 @@ public class OrderServiceImpl implements OrderService{
     return existingOrder;
   }
 
-  @Override
-  public List<OrderItem> toOrderItems(List<OrderItem.DTO> orderItemDtos) {
+  private List<OrderItem> toOrderItems(List<OrderItem.DTO> orderItemDtos) {
     return orderItemDtos == null
         ? List.of()
         : orderItemDtos
             .stream()
             .map(dto -> new OrderItem(
                 dto.getId(),
-                this.entityManager.getReference(MenuItem.class, dto.getMenuItemId()),
+                this.anonymousRepository.findOptional(MenuItem.class, dto.getMenuItemId())
+                    .orElseThrow(() -> new NotFoundException("MenuItem %d not found".formatted(dto.getMenuItemId()))),
                 dto.getQuantity()
             ))
             .toList();
   }
 
   @Override
-  public List<Order> getAll(Long sessionId) {
-    return this.sessionRepository.findByIdOptional(sessionId)
-        .orElseThrow(() -> new WebApplicationException(
-            "Session with id " + sessionId + " does not exist",
-            Status.NOT_FOUND
-        ))
-        .getOrders();
+  public List<Order> getAll(Long sessionId, Long profileId) {
+    if (this.sessionRepository.findByIdOptional(sessionId).isEmpty())
+      throw new NotFoundException("Session with id %d not found".formatted(sessionId));
+    return profileId == null
+        ? this.orderRepository.findBySession(sessionId)
+        : this.orderRepository.findBySessionAndProfile(sessionId, profileId);
   }
 
   @Override
@@ -121,16 +124,17 @@ public class OrderServiceImpl implements OrderService{
         ));
   }
 
-  @Transactional
   @Override
+  @Transactional
   public Order delete(Long sessionId, Long orderId, String userEmail) {
-    Order order = this.orderRepository.findById(orderId);
+    Order order = this.orderRepository.findByIdOptional(orderId)
+        .orElseThrow(() -> new NotFoundException("Order with id " + orderId + " does not exist"));
 
     if (!order.getProfile().getPrimaryEmail().equals(userEmail)) {
       throw new WebApplicationException("Only the user who owns the order can delete it", Status.FORBIDDEN);
     }
 
-    this.orderRepository.delete(order);
+    order.getSession().getOrders().remove(order);
     return order;
   }
 }

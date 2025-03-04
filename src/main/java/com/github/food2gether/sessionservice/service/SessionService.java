@@ -7,10 +7,6 @@ public interface SessionService {
 
   Session createOrUpdate(Session.DTO sessionDto);
 
-  Session create(Session.DTO sessionDto);
-
-  Session update(Session.DTO session);
-
   List<Session> getAll(Long restaurantId, boolean filterOrderable);
 
   Session getById(Long id);

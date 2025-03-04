@@ -8,13 +8,7 @@ public interface OrderService {
 
   Order createOrUpdate(Long sessionId, Order.DTO orderDto);
 
-  Order create(Long sessionId, Order.DTO orderDto);
-
-  Order update(Order.DTO orderDto);
-
-  List<OrderItem> toOrderItems(List<OrderItem.DTO> orderItemDtos);
-
-  List<Order> getAll(Long sessionId);
+  List<Order> getAll(Long sessionId, Long profileId);
 
   Order getById(Long sessionId, Long orderId);
 

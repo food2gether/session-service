@@ -21,12 +21,12 @@ public class SessionRepositoryImpl implements SessionRepository {
 
   @Override
   public List<Session> findByDueDate(LocalDateTime dueDate) {
-    return this.list("deadline < ?1", dueDate);
+    return this.list("deadline > ?1", dueDate);
   }
 
   @Override
   public List<Session> findByRestaurantAndDueDate(Long restaurantId, LocalDateTime dueDate) {
-    return this.list("restaurant.id = ?1 AND deadline < ?2", restaurantId, dueDate);
+    return this.list("restaurant.id = ?1 AND deadline > ?2", restaurantId, dueDate);
   }
 
   @Override

@@ -6,6 +6,7 @@ import com.github.food2gether.shared.response.APIResponse;
 import com.github.food2gether.sessionservice.service.SessionService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.DefaultValue;
@@ -41,7 +42,7 @@ public class SessionResource {
         body.getId() == null
             ? Response.Status.CREATED
             : Response.Status.OK,
-        session
+        Session.DTO.fromSession(session)
     );
   }
 

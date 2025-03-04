@@ -1,5 +1,6 @@
 package com.github.food2gether.sessionservice.service;
 
+import com.github.food2gether.sessionservice.repository.AnonymousRepository;
 import com.github.food2gether.shared.model.Profile;
 import com.github.food2gether.shared.model.Restaurant;
 import com.github.food2gether.shared.model.Session;
@@ -12,23 +13,25 @@ import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.TimeZone;
 
 @ApplicationScoped
 public class SessionServiceImpl implements SessionService {
 
   @Inject
-  EntityManager entityManager;
+  SessionRepository sessionRepository;
 
   @Inject
-  SessionRepository sessionRepository;
+  AnonymousRepository anonymousRepository;
 
   @Override
   public Session createOrUpdate(Session.DTO sessionDto) {
     return sessionDto.getId() == null ? this.create(sessionDto) : this.update(sessionDto);
   }
 
-  @Override
+  @Transactional
   public Session create(Session.DTO sessionDto) {
     if (sessionDto.getId() != null) {
       throw new WebApplicationException(
@@ -49,9 +52,13 @@ public class SessionServiceImpl implements SessionService {
     }
 
     Session session = new Session();
-    session.setOrders(List.of());
-    session.setRestaurant(this.entityManager.getReference(Restaurant.class, sessionDto.getRestaurantId()));
-    session.setOrganizer(this.entityManager.getReference(Profile.class, sessionDto.getOrganizerId()));
+
+    session.setRestaurant(
+        this.anonymousRepository.findOptional(Restaurant.class, sessionDto.getRestaurantId())
+            .orElseThrow(() -> new NotFoundException("Restaurant not found")));
+    session.setOrganizer(
+        this.anonymousRepository.findOptional(Profile.class, sessionDto.getOrganizerId())
+            .orElseThrow(() -> new NotFoundException("Organizer not found")));
     session.setDeadline(sessionDto.getDeadline());
 
     this.sessionRepository.persist(session);
@@ -59,7 +66,6 @@ public class SessionServiceImpl implements SessionService {
   }
 
   @Transactional
-  @Override
   public Session update(Session.DTO session) {
     if (session.getId() == null) {
       throw new WebApplicationException("Session id must not be null for updating a session", Status.BAD_REQUEST);
@@ -77,11 +83,15 @@ public class SessionServiceImpl implements SessionService {
     }
 
     if (session.getRestaurantId() != null) {
-      existingSession.setRestaurant(this.entityManager.getReference(Restaurant.class, session.getRestaurantId()));
+      existingSession.setRestaurant(
+          this.anonymousRepository.findOptional(Restaurant.class, session.getRestaurantId())
+              .orElseThrow(() -> new NotFoundException("Restaurant not found")));
     }
 
     if (session.getOrganizerId() != null) {
-      existingSession.setOrganizer(this.entityManager.getReference(Profile.class, session.getOrganizerId()));
+      existingSession.setOrganizer(
+          this.anonymousRepository.findOptional(Profile.class, session.getOrganizerId())
+              .orElseThrow(() -> new NotFoundException("Organizer not found")));
     }
 
     this.sessionRepository.persist(existingSession);
@@ -90,7 +100,7 @@ public class SessionServiceImpl implements SessionService {
 
   @Override
   public List<Session> getAll(Long restaurantId, boolean filterOrderable) {
-    LocalDateTime dueDate = filterOrderable ? LocalDateTime.now() : LocalDateTime.MAX;
+    LocalDateTime dueDate = filterOrderable ? LocalDateTime.now() : LocalDateTime.of(0, 1, 1, 0, 0);
     return restaurantId == null
         ? this.sessionRepository.findByDueDate(dueDate)
         : this.sessionRepository.findByRestaurantAndDueDate(restaurantId, dueDate);
@@ -102,8 +112,8 @@ public class SessionServiceImpl implements SessionService {
         .orElseThrow(() -> new WebApplicationException("Session with id " + id + " does not exist", Status.NOT_FOUND));
   }
 
-  @Transactional
   @Override
+  @Transactional
   public Session delete(String userEmail, Long id) {
     Session session = this.sessionRepository.findByIdOptional(id)
         .orElseThrow(() -> new NotFoundException("Session with id " + id + " does not exist"));

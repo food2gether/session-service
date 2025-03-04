@@ -13,6 +13,7 @@ import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -47,9 +48,10 @@ public class SessionOrderResource {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Response getAllOrders(
-      @PathParam("session_id") Long sessionId
+      @PathParam("session_id") Long sessionId,
+      @QueryParam("profile_id") Long profileId
   ) {
-    List<Order> sessions = this.service.getAll(sessionId);
+    List<Order> sessions = this.service.getAll(sessionId, profileId);
 
     return APIResponse.response(
         Response.Status.OK,
@@ -82,9 +84,10 @@ public class SessionOrderResource {
       @PathParam("session_id") Long sessionId,
       @PathParam("order_id") Long orderId
   ) {
+    Order order = this.service.getById(sessionId, orderId);
     return APIResponse.response(
         Response.Status.OK,
-        this.service.delete(sessionId, orderId, userEmail)
+        Order.DTO.fromOrder(order)
     );
   }
 
