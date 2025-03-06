@@ -5,6 +5,7 @@ import com.github.food2gether.shared.response.APIResponse;
 import com.github.food2gether.sessionservice.service.OrderService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -29,18 +30,19 @@ public class SessionOrderResource {
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
+  @Transactional
   public Response createOrUpdateOrder(@PathParam("session_id") Long sessionId, Order.DTO body) {
     if (body == null) {
       throw new WebApplicationException("Missing request body", Response.Status.BAD_REQUEST);
     }
 
-    Order session = this.service.createOrUpdate(sessionId, body);
+    Order order = this.service.createOrUpdate(sessionId, body);
 
     return APIResponse.response(
         body.getId() == null
             ? Response.Status.CREATED
             : Response.Status.OK,
-        Order.DTO.fromOrder(session)
+        Order.DTO.fromOrder(order)
     );
   }
 

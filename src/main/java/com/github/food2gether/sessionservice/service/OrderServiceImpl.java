@@ -73,10 +73,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     Order existingOrder = this.orderRepository.findByIdOptional(orderDto.getId()).
-        orElseThrow(() -> new WebApplicationException(
-            "Order with id " + orderDto.getId() + " does not exist",
-            Status.NOT_FOUND
-        ));
+        orElse(new Order());
 
     if (orderDto.getProfileId() != null)
       existingOrder.setProfile(this.anonymousRepository.findOptional(Profile.class, orderDto.getProfileId())

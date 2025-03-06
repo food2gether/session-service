@@ -1,7 +1,6 @@
 package com.github.food2gether.sessionservice.service;
 
 import com.github.food2gether.shared.model.Order;
-import com.github.food2gether.shared.model.OrderItem;
 import java.util.List;
 
 public interface OrderService {
